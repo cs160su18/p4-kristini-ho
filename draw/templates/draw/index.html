@@ -33,26 +33,73 @@
     var path = new paper.Path();
     path.strokeColor = 'black';
     path.strokewidth = 10;
+  
+//     var paths = [new paper.Path(), new paper.Path(), new paper.Path()]
+  
+    var myColor = 'red'; // dummy color which will be replaced later
+    var colorOptions = ['red', 'green', 'blue', 'black'];
+    var clientID = 0;
+    var inactive = true;
 
     tool.onMouseMove = function(event) {
-      socket.send([event.point.x, event.point.y]);
+      if (inactive) {
+         var msg = {
+            type: "firstMove",
+            clientID: clientID
+         };
+        socket.send(JSON.stringify(msg));
+        myColor = colorOptions[clientID];
+        inactive = false;
+      }
+     
+      var msg = {
+          type: "point",
+          x: event.point.x,
+          y: event.point.y,
+          color: myColor,
+          id: clientID
+      };
+
+      socket.send(JSON.stringify(msg));      
+
     };
 
     socket.onopen = function (event) { 
       console.log("socket opened");
-    };
+      // socket.send("Hello server, socket opened!");
+      
+    }
+  
 
     // received message from server
-    socket.onmessage = function(receivedMessage){    
-      var coords = receivedMessage.data.split(',');
-      path.add(new paper.Point(coords));
+    socket.onmessage = function(receivedMessage){
+    
+      var msg = JSON.parse(receivedMessage.data);
+      switch (msg.type) {    
+          case "firstMove":
+              if (inactive) {
+                clientID += 1;                
+              }
+         
+              break;
+           case "point":  
+              // check for "currently drawing"
+              // if different, then create a new path and reassign current drawing
+              path.strokeColor = msg.color;
+              path.add(new paper.Point(msg.x, msg.y));
+
+              break;  
+      }
+
+      console.log("message received:");
+      console.log(msg);      
     };
 
     // notify console if socket closes unexpectedl
     socket.onclose = function(e){
      console.error('chat socket closed unexpectedly');
     };
-
+  
 
 
 </script>
