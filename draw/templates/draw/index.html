@@ -28,8 +28,31 @@
     // getting the URL (you may want to use for Exercise 3)
     var url = window.location.href;
 
-    // var socket = new WebSocket(
-    //     'ws://your url here:8765/');
+    var socket = new WebSocket('ws://p4-kristini-ho-kristinho836388.codeanyapp.com:8765/');
+  
+    var path = new paper.Path();
+    path.strokeColor = 'black';
+    path.strokewidth = 10;
+
+    tool.onMouseMove = function(event) {
+      socket.send([event.point.x, event.point.y]);
+    };
+
+    socket.onopen = function (event) { 
+      console.log("socket opened");
+    };
+
+    // received message from server
+    socket.onmessage = function(receivedMessage){    
+      var coords = receivedMessage.data.split(',');
+      path.add(new paper.Point(coords));
+    };
+
+    // notify console if socket closes unexpectedl
+    socket.onclose = function(e){
+     console.error('chat socket closed unexpectedly');
+    };
+
 
 
 </script>
