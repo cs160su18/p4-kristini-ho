@@ -80,10 +80,10 @@
               if (size == "small" && clientID == msg.id || size == "large") { // only add path if small + own path, or large
                 
                 if (paths[msg.id]) { // seen this client already
-                    console.log("seen client", msg.id)
+                    // console.log("seen client", msg.id)
                     paths[msg.id].add(new paper.Point(msg.x, msg.y));                    
                 } else { // new client
-                    console.log("new client", msg.id)
+                    // console.log("new client", msg.id)
                     paths[msg.id] = new paper.Path();
                     paths[msg.id].strokeColor = msg.color;
                     paths[msg.id].strokewidth = 10;
@@ -99,6 +99,27 @@
      console.error('chat socket closed unexpectedly');
     };
   
+  
+    window.ondeviceorientation = function(e) {
+      if (e.gamma > 0) { // right tilt
+          paths[clientID].strokeColor = 'orange';        
+      } else {
+          paths[clientID].strokeColor = myColor;
+      }
+      console.log("DEVICE ORIENTATION GAMMA");
+      console.log(e.gamma);
+    }
+    
+    window.ondevicemotion = function(e) {
+      // clear canvas on shake
+      if ((Math.abs(e.acceleration.x) + Math.abs(e.acceleration.y) + Math.abs(e.acceleration.z)) > 45) {
+       
+        for(var id in paths) {
+            paths[id].removeSegments();
+        }
+ 
+      }
+    }
 
 
 </script>
