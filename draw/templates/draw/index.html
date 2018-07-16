@@ -31,12 +31,12 @@
     var socket = new WebSocket('ws://p4-kristini-ho-kristinho836388.codeanyapp.com:8765/');
   
     var myColor = 'red'; // placeholder color
-    var colorOptions = ['red', 'green', 'blue', 'black'];
     var clientID = 0; // placeholder client ID
     var inactive = true;
-  
     var paths = {};
-
+  
+    let colorOptions = ['red', 'green', 'blue', 'black'];
+   
     tool.onMouseMove = function(event) {
       if (inactive) {
          var msg = {
@@ -74,14 +74,22 @@
                 clientID += 1;                
               }         
               break;
-           case "point":  
-              if (paths[msg.id]) { // seen this client already
-                  paths[msg.id].add(new paper.Point(msg.x, msg.y));
-              } else { // new client
-                  paths[msg.id] = new paper.Path();
-                  paths[msg.id].strokeColor = msg.color;
-                  paths[msg.id].strokewidth = 10;
-                  paths[msg.id].add(new paper.Point(msg.x, msg.y));
+           case "point":
+              var myUrl = new URL(url); // construct URL to use search functions
+              var size = myUrl.searchParams.get("size");
+              if (size == "small" && clientID == msg.id || size == "large") { // only add path if small + own path, or large
+                
+                if (paths[msg.id]) { // seen this client already
+                    console.log("seen client", msg.id)
+                    paths[msg.id].add(new paper.Point(msg.x, msg.y));                    
+                } else { // new client
+                    console.log("new client", msg.id)
+                    paths[msg.id] = new paper.Path();
+                    paths[msg.id].strokeColor = msg.color;
+                    paths[msg.id].strokewidth = 10;
+                    paths[msg.id].add(new paper.Point(msg.x, msg.y));                   
+                }
+                
               }
       }    
     };
