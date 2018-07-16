@@ -30,23 +30,17 @@
 
     var socket = new WebSocket('ws://p4-kristini-ho-kristinho836388.codeanyapp.com:8765/');
   
-    var path = new paper.Path();
-    path.strokeColor = 'black';
-    path.strokewidth = 10;
-  
-//     var paths = [new paper.Path(), new paper.Path(), new paper.Path()]
-  
-    var myColor = 'red'; // dummy color which will be replaced later
+    var myColor = 'red'; // placeholder color
     var colorOptions = ['red', 'green', 'blue', 'black'];
-    var clientID = 0;
-    var currentlyDrawing = -1;
+    var clientID = 0; // placeholder client ID
     var inactive = true;
+  
+    var paths = {};
 
     tool.onMouseMove = function(event) {
       if (inactive) {
          var msg = {
-            type: "firstMove",
-            clientID: clientID
+            type: "firstMove"
          };
         socket.send(JSON.stringify(msg));
         myColor = colorOptions[clientID];
@@ -67,14 +61,12 @@
 
     socket.onopen = function (event) { 
       console.log("socket opened");
-      // socket.send("Hello server, socket opened!");
-      
+      // socket.send("Hello server, socket opened!");      
     }
   
 
     // received message from server
     socket.onmessage = function(receivedMessage){
-    
       var msg = JSON.parse(receivedMessage.data);
       switch (msg.type) {    
           case "firstMove":
@@ -83,14 +75,14 @@
               }         
               break;
            case "point":  
-              if (msg.id != currentlyDrawing) {
-                window.path = new paper.Path();      
-                window.path.strokewidth = 10;  
-                currentlyDrawing = msg.id;  
-              } 
-              path.strokeColor = msg.color;
-              path.add(new paper.Point(msg.x, msg.y));
-              break;  
+              if (paths[msg.id]) { // seen this client already
+                  paths[msg.id].add(new paper.Point(msg.x, msg.y));
+              } else { // new client
+                  paths[msg.id] = new paper.Path();
+                  paths[msg.id].strokeColor = msg.color;
+                  paths[msg.id].strokewidth = 10;
+                  paths[msg.id].add(new paper.Point(msg.x, msg.y));
+              }
       }    
     };
 
