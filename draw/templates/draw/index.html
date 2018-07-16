@@ -39,6 +39,7 @@
     var myColor = 'red'; // dummy color which will be replaced later
     var colorOptions = ['red', 'green', 'blue', 'black'];
     var clientID = 0;
+    var currentlyDrawing = -1;
     var inactive = true;
 
     tool.onMouseMove = function(event) {
@@ -79,20 +80,18 @@
           case "firstMove":
               if (inactive) {
                 clientID += 1;                
-              }
-         
+              }         
               break;
            case "point":  
-              // check for "currently drawing"
-              // if different, then create a new path and reassign current drawing
+              if (msg.id != currentlyDrawing) {
+                window.path = new paper.Path();      
+                window.path.strokewidth = 10;  
+                currentlyDrawing = msg.id;  
+              } 
               path.strokeColor = msg.color;
               path.add(new paper.Point(msg.x, msg.y));
-
               break;  
-      }
-
-      console.log("message received:");
-      console.log(msg);      
+      }    
     };
 
     // notify console if socket closes unexpectedl
